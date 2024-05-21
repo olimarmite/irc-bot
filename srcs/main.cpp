@@ -16,6 +16,8 @@
 #define CMD_PASS(password) std::string("PASS ") + password + "\r\n"
 #define CMD_NICK(nickname) std::string("NICK ") + nickname + "\r\n"
 #define CMD_USER(username, realname) std::string("USER ") + username + " 0 * " + realname + "\r\n"
+#define CMD_JOIN(channel) std::string("JOIN ") + channel + "\r\n"
+#define CMD_PRIVMSG(target, message) std::string("PRIVMSG ") + target + " :" + std::string(message) + "\r\n"
 
 
 #define BOT_NAME "Tierry"
@@ -60,8 +62,8 @@ int main()
 
 	send_msg(socket_fd, CMD_USER(BOT_NAME, BOT_NAME));
 	send_msg(socket_fd, CMD_NICK(BOT_NAME));
-
-
+	send_msg(socket_fd, CMD_JOIN("#bad_apple_bot"));
+	send_msg(socket_fd, CMD_PRIVMSG("#bad_apple_bot", "hellow world"));
 
 	// for (int i = 0; i < 20; i++)
 	// {
