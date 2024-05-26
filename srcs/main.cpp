@@ -1,80 +1,32 @@
-#include <cerrno>
-#include <cstring>
+#include "irc_bot.hpp"
+#include <exception>
 #include <iostream>
-#include <ostream>
-#include <sstream>
-#include <stdexcept>
-#include <streambuf>
-#include <string>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <cstring>
 
-
-#define CMD_PASS(password) std::string("PASS ") + password + "\r\n"
-#define CMD_NICK(nickname) std::string("NICK ") + nickname + "\r\n"
-#define CMD_USER(username, realname) std::string("USER ") + username + " 0 * " + realname + "\r\n"
-#define CMD_JOIN(channel) std::string("JOIN ") + channel + "\r\n"
-#define CMD_PRIVMSG(target, message) std::string("PRIVMSG ") + target + " :" + std::string(message) + "\r\n"
-
-
-#define BOT_NAME "Tierry"
-
-void send_msg(int fd, std::string msg)
+int main(int argc, char **argv)
 {
-	send(fd, msg.c_str(), msg.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
-}
 
-int main()
-{
-	std::string server_password = "";
-
-	struct addrinfo hints;
-	struct addrinfo *addrinfos;
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	if (getaddrinfo("punch.wa.us.dal.net", "6667", &hints, &addrinfos) != 0)
+	if (argc < 3)
 	{
-		throw std::runtime_error(gai_strerror(errno));
+		std::cerr << "Usage: <host> <port> [password]" << std::endl;
+		return (1);
 	}
 
-	int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (socket_fd < 0)
-	{
-		throw std::runtime_error(strerror(errno));
+	std::string host = argv[1];
+	std::string port = argv[2];
+	std::string password = argc == 4 ? argv[3] : "";
+
+	IrcBot bot(host, port, password);
+	try {
+		bot.bot_connect();
+
+		bool running = true;
+		while (running)
+		{
+			running = bot.tick();
+		}
+	} catch (std::exception &e) {
+		std::cerr << "Error: " << e.what() << std::endl;
+
 	}
 
-	if (connect(socket_fd, addrinfos->ai_addr, addrinfos->ai_addrlen) != 0)
-	{
-		throw std::runtime_error(strerror(errno));
-	}
-
-	int readed_count = 0;
-
-	char buff[1025];
-
-	if (server_password.empty() == false)
-		send_msg(socket_fd, CMD_PASS(server_password));
-
-	send_msg(socket_fd, CMD_USER(BOT_NAME, BOT_NAME));
-	send_msg(socket_fd, CMD_NICK(BOT_NAME));
-	send_msg(socket_fd, CMD_JOIN("#bad_apple_bot"));
-	send_msg(socket_fd, CMD_PRIVMSG("#bad_apple_bot", "hellow world"));
-
-	// for (int i = 0; i < 20; i++)
-	// {
-	// 	send_msg(socket_fd, "PING\r\n");
-	// 	// send_msg(socket_fd, "PING\r\n");
-// }
-	while (readed_count != -1) {
-		memset(&buff, 0, 1025);
-		readed_count = read(socket_fd, buff, 1024);
-		std::cout<< buff << std::flush;
-	}
-	close(socket_fd);
-	freeaddrinfo(addrinfos);
 }

@@ -22,7 +22,7 @@ def convert_color_to_char(color):
 		return "O"
 	else:
 		return "0"
-	
+
 
 with open('./result.txt', 'w') as file:
 	while(1):
@@ -49,7 +49,7 @@ with open('./result.txt', 'w') as file:
 			result += "".join(line)
 			result += "\n"
 		print(result)
-		result += "---\n"
+		result += "-\n"
 		file.write(result)
 
 

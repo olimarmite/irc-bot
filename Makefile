@@ -1,5 +1,5 @@
 # Project #
-NAME	=	ircserv
+NAME	=	ircbot
 
 # Compiler #
 CXX			=	c++
